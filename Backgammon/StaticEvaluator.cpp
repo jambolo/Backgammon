@@ -54,8 +54,8 @@ float StaticEvaluator::evaluate(GamePlayer::GameState const & state) const
     {
         value = s_AverageBearOffRollsByPoint[p] * s.board_[p];
     }
-    value += s_AverageBearOffRollFromBar * s.board_.bar(Color::BLACK);
-    value -= s_AverageBearOffRollFromBar * s.board_.bar(Color::WHITE);
+    value += s_AverageBearOffRollFromBar * s.board_.barCount(Color::BLACK);
+    value -= s_AverageBearOffRollFromBar * s.board_.barCount(Color::WHITE);
 
     value = -value;
 

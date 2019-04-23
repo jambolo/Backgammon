@@ -81,10 +81,10 @@ static void drawBoard(Board const & b)
             else if (n > i)
                 row[x] = c;
         }
-        if (i == 4 && b.bar(Color::BLACK) > 0)
+        if (i == 4 && b.barCount(Color::BLACK) > 0)
         {
-            row[24] = (b.bar(Color::BLACK) >= 10) ? '1' : ' ';
-            row[25] = '0' + b.bar(Color::BLACK) % 10;
+            row[24] = (b.barCount(Color::BLACK) >= 10) ? '1' : ' ';
+            row[25] = '0' + b.barCount(Color::BLACK) % 10;
         }
         fprintf(stderr, "    %s\n", row);
     }
@@ -105,10 +105,10 @@ static void drawBoard(Board const & b)
             else if (n > i)
                 row[x] = c;
         }
-        if (i == 4 && b.bar(Color::WHITE) > 0)
+        if (i == 4 && b.barCount(Color::WHITE) > 0)
         {
-            row[24] = (b.bar(Color::WHITE) >= 10) ? '1' : ' ';
-            row[25] = '0' + b.bar(Color::WHITE) % 10;
+            row[24] = (b.barCount(Color::WHITE) >= 10) ? '1' : ' ';
+            row[25] = '0' + b.barCount(Color::WHITE) % 10;
         }
         fprintf(stderr, "    %s\n", row);
     }

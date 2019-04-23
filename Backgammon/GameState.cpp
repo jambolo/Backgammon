@@ -8,6 +8,12 @@
 #include "StaticEvaluator.h"
 #endif
 
+#if defined(ANALYSIS_GAME_STATE)
+#include <nlohmann/json.hpp>
+#endif
+
+using json = nlohmann::json;
+
 GameState::GameState(Board const & board,
                      int           cube,
                      Color         cubeOwner,
@@ -97,5 +103,6 @@ void GameState::AnalysisData::reset()
 
 nlohmann::json GameState::AnalysisData::toJson() const
 {
+    return json();
 }
 #endif // defined(ANALYSIS_GAME_STATE)

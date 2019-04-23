@@ -3,6 +3,7 @@
 #include "types.h"
 
 #include <cassert>
+#include <Misc/Base64.h>
 #include <numeric>
 #include <string.h>
 #include <vector>
@@ -10,16 +11,19 @@
 class PositionSerializer
 {
 public:
+    // Pushes a single bit (0 or 1)
     void push(int x)
     {
-        if (i_ == 0)
+        if (index_ == 0)
             value_.push_back(0);
         uint8_t k = value_.back();
         k <<= 1;
         k  += (x & 1);
         value_.back() = k;
-        i_ = (i_ + 1) % 8;
+        index_ = (index_ + 1) % 8;
     }
+
+    // Pushes multiple 0s or multiple 1s
     void push(int n, int x)
     {
         for (int j = 0; j < n; ++j)
@@ -31,7 +35,40 @@ public:
     std::vector<uint8_t> const & value() const { return value_; }
 
 private:
-    size_t i_ = 0;
+    size_t index_ = 0;
+    std::vector<uint8_t> value_;
+};
+
+class PositionDeserializer
+{
+public:
+    PositionDeserializer(std::vector<uint8_t> const & v)
+        : value_(v)
+    {
+    }
+
+    int pop()
+    {
+        if (index_ >= value_.size() * 8)
+            return 0;
+
+        int b = (value_[index_ / 8] >> (index_ % 8)) & 1;
+        ++index_;
+        return b;
+    }
+
+    int popOnes()
+    {
+        int count = 0;
+        for (int b = pop(); b != 0; b = pop())
+        {
+            ++count;
+        }
+        return count;
+    }
+
+private:
+    size_t index_ = 0;
     std::vector<uint8_t> value_;
 };
 
@@ -61,9 +98,56 @@ static void serializeBlacksPosition(PositionSerializer * serializer, int const *
     serializer->push(0);
 }
 
+static int deserializeBlacksPosition(PositionDeserializer * deserializer, int * board, int * bar)
+{
+    int total = 0;
+    for (int i = 0; i < Board::SIZE; ++i)
+    {
+        int n = deserializer->popOnes();
+        board[i] = n;
+        total   += n;
+    }
+    *bar = deserializer->popOnes();
+    return total + *bar;
+}
+
+static int deserializeWhitesPosition(PositionDeserializer * deserializer, int * board, int * bar)
+{
+    int total = 0;
+    for (int i = Board::SIZE - 1; i >= 0; --i)
+    {
+        int n = deserializer->popOnes();
+        board[i] = -n;
+        total   += n;
+    }
+    *bar = deserializer->popOnes();
+    return total + *bar;
+}
+
 Board::Board()
 {
     clear();
+}
+
+Board::Board(Color color, char const * positionId)
+{
+    clear();
+    std::string id(positionId);
+    assert(id.size() == 14);
+    id += "==";
+    std::string key = Base64::decode(id);
+
+    PositionDeserializer deserializer(std::vector<uint8_t>(key.begin(), key.end()));
+    if (color == Color::BLACK)
+    {
+        off_[(int)Color::BLACK] = deserializeBlacksPosition(&deserializer, board_, &bar_[(int)Color::BLACK]);
+        off_[(int)Color::WHITE] = deserializeWhitesPosition(&deserializer, board_, &bar_[(int)Color::WHITE]);
+    }
+    else
+    {
+        off_[(int)Color::WHITE] = deserializeWhitesPosition(&deserializer, board_, &bar_[(int)Color::WHITE]);
+        off_[(int)Color::BLACK] = deserializeBlacksPosition(&deserializer, board_, &bar_[(int)Color::BLACK]);
+    }
 }
 
 void Board::initialize()
@@ -85,6 +169,68 @@ void Board::initialize()
                            [] (int a, int b) {
                                return std::abs(a) + std::abs(b);
                            }) == NUMBER_OF_CHECKERS);
+}
+
+void Board::add(Color color, int to)
+{
+    if (to == OFF)
+    {
+        assert(off_[(int)color] < NUMBER_OF_CHECKERS);
+        ++off_[(int)color];
+    }
+    else if (to == BAR)
+    {
+        assert(bar_[(int)color] < NUMBER_OF_CHECKERS);
+        ++bar_[(int)color];
+    }
+    else
+    {
+        --to;
+        if (color == Color::BLACK)
+        {
+            assert(board_[to] >= 0);
+            ++board_[to];
+        }
+        else
+        {
+            assert(board_[to] <= 0);
+            --board_[to];
+        }
+    }
+}
+
+void Board::remove(Color color, int from)
+{
+    if (from == OFF)
+    {
+        assert(off_[(int)color] > 0);
+        --off_[(int)color];
+    }
+    else if (from == BAR)
+    {
+        assert(bar_[(int)color] > 0);
+        --bar_[(int)color];
+    }
+    else
+    {
+        --from;
+        if (color == Color::BLACK)
+        {
+            assert(board_[from] > 0);
+            --board_[from];
+        }
+        else
+        {
+            assert(board_[from] < 0);
+            ++board_[from];
+        }
+    }
+}
+
+void Board::move(Color color, int from, int to)
+{
+    remove(color, from);
+    add(color, to);
 }
 
 std::string Board::positionId(Color color) const
@@ -117,9 +263,11 @@ std::string Board::positionId(Color color) const
     key.resize(10);
 
     // Base-64 encode the key
-    std::string id; // = Base64::encode(key);
+    std::string id = Base64::encode(key.data(), key.size());
+    assert(id.size() == 16);
 
-    return id;
+    // Return the id without the trailing "==". The ID is always 14 characters.
+    return id.substr(0, 14);
 }
 
 void Board::clear()
@@ -127,6 +275,8 @@ void Board::clear()
     memset(board_, 0, sizeof board_);
     bar_[(int)Color::BLACK] = 0;
     bar_[(int)Color::WHITE] = 0;
+    off_[(int)Color::BLACK] = 0;
+    off_[(int)Color::WHITE] = 0;
 }
 
 bool operator ==(Board const & x, Board const & y)

@@ -5,6 +5,8 @@ option(ANALYSIS_GAME_STATE "General GameState analysis is enabled if true" FALSE
 message(STATUS "ANALYSIS_GAME_STATE: ${ANALYSIS_GAME_STATE}")
 
 set(SOURCES
+    AnalysisTools.cpp
+    AnalysisTools.h
     Board.cpp
     Board.h
     GameState.cpp

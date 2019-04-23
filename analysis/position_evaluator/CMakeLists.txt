@@ -5,6 +5,7 @@ option(BUILD_SHARED_LIBS       "Build libraries as DLLs"                    FALS
 
 set(INCLUDE_PATHS
     .
+    ${CMAKE_SOURCE_DIR}
 )
 
 set(SOURCES

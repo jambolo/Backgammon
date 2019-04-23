@@ -1,60 +1,31 @@
-//
-//  main.cpp
-//  position_evaluator
-//
-//  Created by John Bolton on 4/19/19.
-//  Copyright © 2019 John Bolton. All rights reserved.
-//
+#include "Backgammon/AnalysisTools.h"
+#include "Backgammon/Board.h"
 
-#include <array>
 #include <iostream>
 
-struct Entry
-{
-    int64_t value;
-    int64_t f;
-};
-
-Entry frequencies[13] =
-{
-    {  3, 2 },
-    {  4, 3 },
-    {  5, 4 },
-    {  6, 4 },
-    {  7, 6 },
-    {  8, 5 },
-    {  9, 4 },
-    { 10, 2 },
-    { 11, 2 },
-    { 12, 1 },
-    { 16, 1 },
-    { 20, 1 },
-    { 24, 1 }
-};
-
-static void roll(int64_t distance, int64_t i, double f, double & n, double & sum)
+static void roll(int distance, int i, double f, double & n, double & sum)
 {
     ++i;
-    for (auto const & t : frequencies)
+    for (auto const & t : diceResultFrequencies)
     {
-        int64_t d = distance - t.value;
+        int d = distance - t.sum;
         if (d <= 0)
         {
-            n += t.f * f;
-            sum += t.f * i * f;
+            n   += t.frequency * f;
+            sum += t.frequency * i * f;
         }
         else
         {
-            roll(d, i, f * t.f/36.0, n, sum);
+            roll(d, i, f * t.frequency / 36.0, n, sum);
         }
     }
 }
 
 int main(int argc, const char * argv[])
 {
-    for (int64_t point = 1; point <= 25; ++point)
+    for (int point = Board::POINT_1; point <= Board::BAR; ++point)
     {
-        double n = 0;
+        double n   = 0;
         double sum = 0;
 
         roll(point, 0, 1.0, n, sum);
