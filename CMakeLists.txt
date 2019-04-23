@@ -37,8 +37,8 @@ target_compile_definitions(backgammon_player
         -D_SCL_SECURE_NO_WARNINGS
 )
 
+add_subdirectory(analysis)
 add_subdirectory(Backgammon)
 add_subdirectory(bearing_off)
 add_subdirectory(GamePlayer)
-add_subdirectory(position_evaluator)
 

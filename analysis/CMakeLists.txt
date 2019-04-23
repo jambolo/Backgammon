@@ -1,0 +1,4 @@
+add_subdirectory(bearing_off)
+add_subdirectory(position_evaluator)
+add_subdirectory(enumeration_offsets)
+

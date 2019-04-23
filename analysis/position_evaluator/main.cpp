@@ -11,8 +11,8 @@
 
 struct Entry
 {
-    long value;
-    long f;
+    int64_t value;
+    int64_t f;
 };
 
 Entry frequencies[13] =
@@ -32,12 +32,12 @@ Entry frequencies[13] =
     { 24, 1 }
 };
 
-static void roll_again(long distance, long i, double f, double & n, double & sum)
+static void roll(int64_t distance, int64_t i, double f, double & n, double & sum)
 {
     ++i;
     for (auto const & t : frequencies)
     {
-        long d = distance - t.value;
+        int64_t d = distance - t.value;
         if (d <= 0)
         {
             n += t.f * f;
@@ -45,19 +45,19 @@ static void roll_again(long distance, long i, double f, double & n, double & sum
         }
         else
         {
-            roll_again(d, i, f * t.f/36.0, n, sum);
+            roll(d, i, f * t.f/36.0, n, sum);
         }
     }
 }
 
 int main(int argc, const char * argv[])
 {
-    for (long point = 1; point <= 25; ++point)
+    for (int64_t point = 1; point <= 25; ++point)
     {
         double n = 0;
         double sum = 0;
 
-        roll_again(point, 0, 1.0, n, sum);
+        roll(point, 0, 1.0, n, sum);
         std::cout <<
             "point: " << point <<
             ", n = " << n <<
