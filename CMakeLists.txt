@@ -38,6 +38,7 @@ target_compile_definitions(backgammon_player
 )
 
 add_subdirectory(Backgammon)
+add_subdirectory(bearing_off)
 add_subdirectory(GamePlayer)
 add_subdirectory(position_evaluator)
 
