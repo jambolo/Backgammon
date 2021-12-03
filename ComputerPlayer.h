@@ -13,7 +13,7 @@
 #include "GamePlayer/TranspositionTable.h"
 #endif
 #if defined(ANALYSIS_PLAYER)
-#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
 #endif
 
 enum class Color;

@@ -1,7 +1,7 @@
 #include "Backgammon/types.h"
 
 #include <Misc/Probability.h>
-#include <stdio.h>
+#include <cstdio>
 
 static int constexpr NUMBER_OF_POINTS = 6 + 1; // Includes OFF
 

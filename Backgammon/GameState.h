@@ -7,7 +7,7 @@
 #include "GamePlayer/GameState.h"
 #include "Move.h"
 #include "types.h"
-#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
 
 class Move;
 
